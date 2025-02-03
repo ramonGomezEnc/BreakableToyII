@@ -1,8 +1,8 @@
-package com.flightsearch.backend.flight;
+package com.flightsearch.backend.flight.model;
 
-import lombok.Getter;
+import lombok.Data;
 
-@Getter
+@Data
 public class Segment {
     private Departure departure;
     private Arrival arrival;
@@ -15,26 +15,26 @@ public class Segment {
     private int numberOfStops;
     private boolean blacklistedInEU;
 
-    @Getter
+    @Data
     public static class Departure {
         private String iataCode;
         private String terminal;
         private String at; // datetime
     }
 
-    @Getter
+    @Data
     public static class Arrival {
         private String iataCode;
         private String terminal;
         private String at;
     }
 
-    @Getter
+    @Data
     public static class Aircraft {
         private String code;
     }
 
-    @Getter
+    @Data
     public static class Operating {
         private String carrierCode;
     }

@@ -1,9 +1,9 @@
-package com.flightsearch.backend.flight;
+package com.flightsearch.backend.flight.model;
 
-import lombok.Getter;
+import lombok.Data;
 import java.util.List;
 
-@Getter
+@Data
 public class Price {
     private String currency;
     private String total;
@@ -11,7 +11,7 @@ public class Price {
     private List<Fee> fees;
     private String grandTotal;
 
-    @Getter
+    @Data
     public static class Fee {
         private String amount;
         private String type;

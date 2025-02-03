@@ -1,9 +1,9 @@
-package com.flightsearch.backend.flight;
+package com.flightsearch.backend.flight.model;
 
-import lombok.Getter;
+import lombok.Data;
 import java.util.List;
 
-@Getter
+@Data
 public class FlightOffer {
     private String type;
     private String id;
@@ -21,7 +21,7 @@ public class FlightOffer {
     private List<String> validatingAirlineCodes;
     private List<TravelerPricing> travelerPricings;
 
-    @Getter
+    @Data
     public static class PricingOptions {
         private List<String> fareType;
         private boolean includedCheckedBagsOnly;

@@ -1,6 +1,6 @@
-package com.flightsearch.backend.flight;
+package com.flightsearch.backend.flight.model;
 
-import lombok.Getter;
+import lombok.Data;
 import java.util.List;
 
 public class TravelerPricing {
@@ -10,7 +10,7 @@ public class TravelerPricing {
     private Price price;
     private List<FareDetailsBySegment> fareDetailsBySegment;
 
-    @Getter
+    @Data
     public static class FareDetailsBySegment {
         private String segmentId;
         private String cabin;
@@ -21,12 +21,12 @@ public class TravelerPricing {
         private IncludedCheckedBags includedCheckedBags;
         private List<Amenity> amenities;
 
-        @Getter
+        @Data
         public static class IncludedCheckedBags {
             private int quantity;
         }
 
-        @Getter
+        @Data
         public static class Amenity {
             private String description;
             private boolean isChargeable;
@@ -34,7 +34,7 @@ public class TravelerPricing {
             private AmenityProvider amenityProvider;
         }
 
-        @Getter
+        @Data
         public static class AmenityProvider {
             private String name;
         }

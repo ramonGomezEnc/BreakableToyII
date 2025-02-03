@@ -1,9 +1,9 @@
-package com.flightsearch.backend.flight;
+package com.flightsearch.backend.flight.model;
 
-import lombok.Getter;
+import lombok.Data;
 import java.util.List;
 
-@Getter
+@Data
 public class Itinerary {
     private String duration;
     private List<Segment> segments;
