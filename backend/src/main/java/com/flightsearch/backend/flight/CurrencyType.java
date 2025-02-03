@@ -1,4 +1,4 @@
-package com.flightsearch.backend.search;
+package com.flightsearch.backend.flight;
 
 public enum CurrencyType { USD, MXN, EUR }
 
