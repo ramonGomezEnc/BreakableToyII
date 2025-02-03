@@ -1,0 +1,42 @@
+name: sync-from-main
+
+on:
+  push:
+    branches:
+      - main
+    
+jobs:
+  branch-sync:
+    runs-on: ubuntu-latest
+    steps:
+     - name: Checkout code
+       uses: actions/checkout@v4.2.2
+       with:
+         fetch-depth: 0
+         token: ${{ secrets.GITHUB_TOKEN }}
+
+     - name: Debug Branches
+       run: |
+         echo "Branches found:"
+         git branch -a
+
+     - name: Get all branches except main
+       id: get_branches
+       run: |
+         branches=$(git branch -r | grep -o 'origin/.*' | grep -v 'origin/main$' | sed 's|origin/||' | tr '\n' ' ')
+         if [ -z "$branches" ]; then
+           echo "No branches found other than 'main'."
+           exit 0
+         fi
+         echo "branches=$branches" >> $GITHUB_ENV
+ 
+     - name: Merge main into each branch
+       if: env.branches 
+       run: |
+         for branch in ${{ env.branches }}; do
+           echo "Merging main into $branch"
+           git fetch origin $branch:$branch || echo "Failed to fetch $branch"
+           git checkout $branch -- || echo "Failed to checkout $branch"
+           git merge main -m "Merge: main into $branch" || echo "Merge conflict in $branch, resolving manually required."
+           git push origin $branch || echo "Failed to push $branch"
+         done
