@@ -1,8 +1,10 @@
 package com.flightsearch.backend.flight.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Segment {
     private Departure departure;
     private Arrival arrival;
@@ -16,6 +18,7 @@ public class Segment {
     private boolean blacklistedInEU;
 
     @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Departure {
         private String iataCode;
         private String terminal;
@@ -23,6 +26,7 @@ public class Segment {
     }
 
     @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Arrival {
         private String iataCode;
         private String terminal;

@@ -1,8 +1,11 @@
 package com.flightsearch.backend.flight.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import java.util.List;
 
+@Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class TravelerPricing {
     private String travelerId;
     private String fareOption;
@@ -11,6 +14,7 @@ public class TravelerPricing {
     private List<FareDetailsBySegment> fareDetailsBySegment;
 
     @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class FareDetailsBySegment {
         private String segmentId;
         private String cabin;
@@ -22,11 +26,13 @@ public class TravelerPricing {
         private List<Amenity> amenities;
 
         @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
         public static class IncludedCheckedBags {
             private int quantity;
         }
 
         @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
         public static class Amenity {
             private String description;
             private boolean isChargeable;
@@ -35,6 +41,7 @@ public class TravelerPricing {
         }
 
         @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
         public static class AmenityProvider {
             private String name;
         }
