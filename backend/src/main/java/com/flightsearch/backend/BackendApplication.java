@@ -1,10 +1,11 @@
 package com.flightsearch.backend;
 
+import com.flightsearch.backend.flight.utils.DurationUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.client.RestTemplate;
-import com.flightsearch.backend.flight.utils.TimeFunctions;
+import com.flightsearch.backend.flight.utils.DurationUtils;
 
 @SpringBootApplication
 public class BackendApplication {
@@ -19,7 +20,7 @@ public class BackendApplication {
 	}
 
 	@Bean
-	public TimeFunctions timeFunctions() {
-		return new TimeFunctions();
+	public DurationUtils durationUtils() {
+		return new DurationUtils();
 	}
 }

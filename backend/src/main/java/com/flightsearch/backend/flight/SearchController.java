@@ -18,10 +18,6 @@ public class SearchController {
         this.service = service;
     }
 
-    /**
-     * Endpoint GET: /flights
-     * Return a flight options list (only essential information)
-     */
     @GetMapping("/flights")
     public ResponseEntity<List<Map<String, Object>>> getAllFlightOptions(
             @RequestParam String departureAirportCode,
@@ -48,19 +44,4 @@ public class SearchController {
             throw new RuntimeException(e);
         }
     }
-
-    /**
-     * Endpoint GET: /flights/{id}
-     * Return a detailed flight option by id
-     */
-//    @GetMapping("/flights/{id}")
-//    public ResponseEntity<Map<String, Object>> getFlightOptionsById(@PathVariable String id) {
-//
-//        try {
-//            Map<String, Object> flight = service.getFlightOptionById(id);
-//            return ResponseEntity.ok(flight);
-//        } catch (Exception e) {
-//            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
-//    }
 }
