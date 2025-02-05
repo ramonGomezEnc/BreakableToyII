@@ -1,4 +1,4 @@
-package com.flightsearch.backend.flight.model;
+package com.flightsearch.backend.model.flightoptions;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;

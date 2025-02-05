@@ -1,4 +1,4 @@
-package com.flightsearch.backend.flight.utils;
+package com.flightsearch.backend.utils;
 
 import java.time.Duration;
 import java.time.LocalDateTime;

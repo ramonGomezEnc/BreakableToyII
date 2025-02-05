@@ -1,9 +1,11 @@
-package com.flightsearch.backend.flight.mapper;
+package com.flightsearch.backend.mapper;
 
-import com.flightsearch.backend.flight.model.Dictionaries;
-import com.flightsearch.backend.flight.model.FlightOffer;
-import com.flightsearch.backend.flight.model.Segment;
-import com.flightsearch.backend.flight.utils.DurationUtils;
+import com.flightsearch.backend.model.Airport;
+import com.flightsearch.backend.model.flightoptions.Dictionaries;
+import com.flightsearch.backend.model.flightoptions.FlightOffer;
+import com.flightsearch.backend.model.flightoptions.Segment;
+import com.flightsearch.backend.utils.DurationUtils;
+import com.flightsearch.backend.client.AmadeusClient;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -13,9 +15,11 @@ import java.util.*;
 public class FlightOfferMapper {
 
     private final DurationUtils durationUtils;
+    private final AmadeusClient amadeusClient;
 
-    public FlightOfferMapper(DurationUtils durationUtils) {
+    public FlightOfferMapper(DurationUtils durationUtils, AmadeusClient amadeusClient) {
         this.durationUtils = durationUtils;
+        this.amadeusClient = amadeusClient;
     }
 
     public List<Map<String, Object>> buildEssentialFlightList(List<FlightOffer> flightOffers, Dictionaries dictionaries) {
@@ -38,8 +42,26 @@ public class FlightOfferMapper {
 
             flightMap.put("initialDeparture", firstSegment.getDeparture().getAt());
             flightMap.put("finalArrival", lastSegment.getArrival().getAt());
-            flightMap.put("departureAirportCode", firstSegment.getDeparture().getIataCode());
-            flightMap.put("arrivalAirportCode", lastSegment.getArrival().getIataCode());
+
+            var departureAirportCode = firstSegment.getDeparture().getIataCode();
+            flightMap.put("departureAirportCode", departureAirportCode);
+
+            try {
+                Airport departureAirport = amadeusClient.fetchAirport(departureAirportCode);
+                flightMap.put("departureAirportName", departureAirport.getName());
+            } catch (Exception e) {
+                flightMap.put("departureAirportName", null);
+            }
+
+            var arrivalAirportCode = lastSegment.getArrival().getIataCode();
+            flightMap.put("arrivalAirportCode", arrivalAirportCode);
+
+            try {
+                Airport arrivalAirport = amadeusClient.fetchAirport(arrivalAirportCode);
+                flightMap.put("arrivalAirportName", arrivalAirport.getName());
+            } catch (Exception e) {
+                flightMap.put("arrivalAirportName", null);
+            }
 
             var mainAirlineCode = firstSegment.getCarrierCode();
             String mainAirlineName = (dictionaries != null && dictionaries.getCarriers() != null)
