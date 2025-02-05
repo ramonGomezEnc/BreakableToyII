@@ -89,12 +89,13 @@ public class AmadeusClient {
         }
 
         String uri = uriBuilder.toUriString();
-        ResponseEntity<JsonNode> response = restTemplate.exchange(uri, HttpMethod.GET, entity, JsonNode.class);
+        ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.GET, entity, String.class);
 
         if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
             throw new RuntimeException("Error when calling Amadeus API: " + response.getStatusCode());
         }
 
-        return objectMapper.readValue(response.getBody().toString(), GeneralResponse.class);
+        String modifiedJson = response.getBody().replace("\"class\":", "\"className\":");
+        return objectMapper.readValue(modifiedJson, GeneralResponse.class);
     }
 }

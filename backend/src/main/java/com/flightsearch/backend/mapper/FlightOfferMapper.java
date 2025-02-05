@@ -16,10 +16,25 @@ public class FlightOfferMapper {
 
     private final DurationUtils durationUtils;
     private final AmadeusClient amadeusClient;
+    private final Map<String, String> airportCache = new HashMap<>();
 
     public FlightOfferMapper(DurationUtils durationUtils, AmadeusClient amadeusClient) {
         this.durationUtils = durationUtils;
         this.amadeusClient = amadeusClient;
+    }
+
+    private String getAirportName(String airportCode) {
+        String airportName = airportCache.get(airportCode);
+        if (airportName == null) {
+            try {
+                Airport airport = amadeusClient.fetchAirport(airportCode);
+                airportName = airport.getName();
+                airportCache.put(airportCode, airportName);
+            } catch (Exception e) {
+                airportName = null;
+            }
+        }
+        return airportName;
     }
 
     public List<Map<String, Object>> buildEssentialFlightList(List<FlightOffer> flightOffers, Dictionaries dictionaries) {
@@ -33,6 +48,7 @@ public class FlightOfferMapper {
                 continue;
             }
 
+            // ID
             Map<String, Object> flightMap = new LinkedHashMap<>();
             flightMap.put("id", offer.getId());
 
@@ -40,29 +56,20 @@ public class FlightOfferMapper {
             var firstSegment = itinerary.getSegments().getFirst();
             var lastSegment = itinerary.getSegments().getLast();
 
+            // Initial and Final Times
             flightMap.put("initialDeparture", firstSegment.getDeparture().getAt());
             flightMap.put("finalArrival", lastSegment.getArrival().getAt());
 
+            // Airports
             var departureAirportCode = firstSegment.getDeparture().getIataCode();
             flightMap.put("departureAirportCode", departureAirportCode);
-
-            try {
-                Airport departureAirport = amadeusClient.fetchAirport(departureAirportCode);
-                flightMap.put("departureAirportName", departureAirport.getName());
-            } catch (Exception e) {
-                flightMap.put("departureAirportName", null);
-            }
+            flightMap.put("departureAirportName", getAirportName(departureAirportCode));
 
             var arrivalAirportCode = lastSegment.getArrival().getIataCode();
             flightMap.put("arrivalAirportCode", arrivalAirportCode);
+            flightMap.put("arrivalAirportName", getAirportName(arrivalAirportCode));
 
-            try {
-                Airport arrivalAirport = amadeusClient.fetchAirport(arrivalAirportCode);
-                flightMap.put("arrivalAirportName", arrivalAirport.getName());
-            } catch (Exception e) {
-                flightMap.put("arrivalAirportName", null);
-            }
-
+            // Main Airline
             var mainAirlineCode = firstSegment.getCarrierCode();
             String mainAirlineName = (dictionaries != null && dictionaries.getCarriers() != null)
                     ? dictionaries.getCarriers().getOrDefault(mainAirlineCode, mainAirlineCode)
@@ -70,6 +77,7 @@ public class FlightOfferMapper {
             flightMap.put("airlineCode", mainAirlineCode);
             flightMap.put("airlineName", mainAirlineName);
 
+            // Operating Airline
             if (firstSegment.getOperating() != null) {
                 var operatingAirlineCode = firstSegment.getOperating().getCarrierCode();
                 if (operatingAirlineCode != null && !operatingAirlineCode.equals(mainAirlineCode)) {
@@ -83,8 +91,10 @@ public class FlightOfferMapper {
                 }
             }
 
+            // Total Flight
             flightMap.put("totalFlightTime", durationUtils.formatIsoStringToReadable(itinerary.getDuration()));
 
+            // Stops
             List<Map<String, Object>> stops = new ArrayList<>();
             List<Segment> segments = itinerary.getSegments();
             for (int i = 0; i < segments.size() - 1; i++) {
@@ -103,11 +113,13 @@ public class FlightOfferMapper {
                 flightMap.put("stops", stops);
             }
 
+            // Price
             if (offer.getPrice() != null) {
                 flightMap.put("totalPrice", offer.getPrice().getGrandTotal());
                 flightMap.put("currency", offer.getPrice().getCurrency());
             }
 
+            // Price per Traveler
             if (offer.getTravelerPricings() != null && !offer.getTravelerPricings().isEmpty()) {
                 flightMap.put(
                         "pricePerTraveler",

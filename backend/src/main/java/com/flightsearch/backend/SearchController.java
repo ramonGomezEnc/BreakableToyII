@@ -59,4 +59,16 @@ public class SearchController {
             throw new RuntimeException(e);
         }
     }
+
+    @GetMapping("/flights/{id}")
+    public ResponseEntity<Map<String, Object>> getDetailedFlightOption(@PathVariable String id) {
+
+        try {
+            Map<String, Object> flight = service.getDetailedFlightOption(id);
+            return ResponseEntity.ok(flight);
+
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

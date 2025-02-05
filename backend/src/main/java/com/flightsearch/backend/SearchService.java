@@ -2,6 +2,7 @@ package com.flightsearch.backend;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.flightsearch.backend.client.AmadeusClient;
+import com.flightsearch.backend.mapper.FlightOfferDetailMapper;
 import com.flightsearch.backend.mapper.FlightOfferMapper;
 import com.flightsearch.backend.model.CurrencyType;
 import com.flightsearch.backend.model.flightoptions.Dictionaries;
@@ -19,21 +20,26 @@ public class SearchService {
 
     private final AmadeusClient amadeusFlightClient;
     private final FlightOfferMapper flightOfferMapper;
+    private final FlightOfferDetailMapper flightOfferDetailMapper;
     private final SortingUtils sortingUtils;
     private final PaginationUtils paginationUtils;
+
     private final Map<String, List<FlightOffer>> flightOffersCache = new HashMap<>();
     private final Map<String, Dictionaries> dictionariesCache = new HashMap<>();
     private final Map<String, List<Map<String, Object>>> mappedFlightsCache = new HashMap<>();
+    private String cacheKey = "";
 
     @Autowired
     public SearchService(
             AmadeusClient amadeusFlightClient,
             FlightOfferMapper flightOfferMapper,
+            FlightOfferDetailMapper flightOfferDetailMapper,
             SortingUtils sortingUtils,
             PaginationUtils paginationUtils
     ) {
         this.amadeusFlightClient = amadeusFlightClient;
         this.flightOfferMapper = flightOfferMapper;
+        this.flightOfferDetailMapper = flightOfferDetailMapper;
         this.sortingUtils = sortingUtils;
         this.paginationUtils = paginationUtils;
     }
@@ -66,7 +72,7 @@ public class SearchService {
             int size
     ) throws JsonProcessingException {
 
-        String cacheKey = buildCacheKey(
+        cacheKey = buildCacheKey(
                 departureAirportKeyword, isDepartureCode,
                 arrivalAirportKeyword, isArrivalCode,
                 departureDate, arrivalDate,
@@ -106,5 +112,24 @@ public class SearchService {
         List<Map<String, Object>> mappedFlights = new ArrayList<>(mappedFlightsCache.get(cacheKey));
         sortingUtils.applySorting(mappedFlights, sortBy, order);
         return paginationUtils.applyPagination(mappedFlights, page, size);
+    }
+
+    public Map<String, Object> getDetailedFlightOption(String flightOfferId) throws JsonProcessingException {
+        if (!flightOffersCache.containsKey(cacheKey) || !dictionariesCache.containsKey(cacheKey)) {
+            return null;
+        }
+
+        List<FlightOffer> offers = flightOffersCache.get(cacheKey);
+        Dictionaries dictionaries = dictionariesCache.get(cacheKey);
+
+        Optional<FlightOffer> maybeOffer = offers.stream()
+                .filter(o -> String.valueOf(o.getId()).equals(flightOfferId))
+                .findFirst();
+
+        return maybeOffer.map(flightOffer -> flightOfferDetailMapper.buildDetailedFlightOption(
+                flightOffer,
+                dictionaries
+        )).orElse(null);
+
     }
 }
