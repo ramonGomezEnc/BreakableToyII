@@ -55,6 +55,11 @@ export const useFlightSearchForm = () => {
         "El código de aeropuerto de llegada debe tener 3 letras (IATA).";
     }
 
+    if (formData.departureAirportKeyword === formData.arrivalAirportKeyword) {
+      newErrors.departureAirportKeyword =
+        "El código de aeropuerto de salida no puede ser el mismo que del regreso.";
+    }
+
 
     const todayDate = new Date(today);
     const departure = new Date(formData.departureDate);

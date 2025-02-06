@@ -12,10 +12,14 @@ interface FlightSearchParams {
   numAdults: number;
   currency: string;
   nonStop: boolean;
+  sortBy?: string; // price, duration
+  order?: string;  // ASC, DES
+  page?: number; 
 }
 
 export const searchFlights = async (params: FlightSearchParams) => {
   const realNonStop = !params.nonStop;
+  console.log(realNonStop, !params.nonStop);
 
   const response = await axios.get(BASE_URL + "flights", {
     params: {
@@ -27,7 +31,10 @@ export const searchFlights = async (params: FlightSearchParams) => {
       arrivalDate: params.arrivalDate,
       numAdults: params.numAdults,
       currency: params.currency,
-      nonStop: realNonStop
+      nonStop: realNonStop,
+      sortBy: params.sortBy,
+      order: params.order,
+      page: params.page
     },
   });
 

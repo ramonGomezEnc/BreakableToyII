@@ -1,23 +1,32 @@
-import React from "react";
+import React, { FC } from "react";
 import { useFlightSearchForm } from "../hooks/useFlightSearchForm";
-import { searchFlights } from "../api/flightSearchApi";
 
-export const FlightSearchCard: React.FC = () => {
+interface FlightSearchCardProps {
+  onSearch: (params: Record<string, any>) => void;
+}
+
+export const FlightSearchCard: FC<FlightSearchCardProps> = ({ onSearch }) => {
   const { formData, errors, handleChange, validateForm } = useFlightSearchForm();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const isValid = validateForm();
-    if (!isValid) return;
+    if (!validateForm()) return;
+    const queryParams = {
+      departureAirportKeyword: formData.departureAirportKeyword,
+      isDepartureCode: formData.isDepartureCode,
+      arrivalAirportKeyword: formData.arrivalAirportKeyword,
+      isArrivalCode: formData.isArrivalCode,
+      departureDate: formData.departureDate,
+      arrivalDate: formData.arrivalDate,
+      numAdults: formData.numAdults,
+      currency: formData.currency,
+      nonStop: formData.nonStop,
+      sortBy: "",
+      order: "",
+      page: 0,
+    };
 
-    try {
-      const data = await searchFlights(formData);
-      console.log("Respuesta API:", data);
-      alert("Búsqueda realizada con éxito (revisa la consola).");
-    } catch (error) {
-      console.error("Error llamando al API:", error);
-      alert("Ocurrió un error al buscar vuelos.");
-    }
+    onSearch(queryParams);
   };
 
   return (
