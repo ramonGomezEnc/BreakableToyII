@@ -54,9 +54,6 @@ public class AmadeusClient {
             body.add("client_secret", clientSecret);
 
             HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
-            System.out.println(clientKey);
-            System.out.println(clientSecret);
-            System.out.println(baseUrl);
             ResponseEntity<JsonNode> response = restTemplate.postForEntity(baseUrl + "/v1/security/oauth2/token", request, JsonNode.class);
 
 
