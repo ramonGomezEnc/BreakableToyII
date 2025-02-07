@@ -4,19 +4,13 @@ import {
   createBrowserRouter,
   RouterProvider
 } from "react-router-dom";
-
 import App from "./App";
 import { SearchPage } from "./pages/SearchPage";
+import "./App.css";
 
 const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <App />,
-  },
-  {
-    path: "/search",
-    element: <SearchPage />,
-  },
+  { path: "/", element: <App /> },
+  { path: "/search", element: <SearchPage /> },
 ]);
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(

@@ -1,17 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { searchFlights } from "../api/flightSearchApi";
+import { searchFlights, FlightSearchParams } from "../api/flightSearchApi";
 import { FlightCard } from "../components/FlightCard";
 import { FlightDetailModal } from "../components/FlightDetailModal";
 import { FlightSearchCard } from "../components/FlightSearchCard";
+import { Flight } from "../models/Flight";
 
 /**
  * Page that shows flight search results, sorting options, and a modal for flight details.
  */
 export const SearchPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [flights, setFlights] = useState<any[]>([]);
+  const [flights, setFlights] = useState<Flight[]>([]);
   const [loading, setLoading] = useState(false);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [selectedFlightId, setSelectedFlightId] = useState<string | null>(null);
@@ -21,25 +22,39 @@ export const SearchPage: React.FC = () => {
   const currentPage = parseInt(searchParams.get("page") || "0", 10);
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
-  useEffect(() => {
-    fetchFlights();
-  }, [searchParams]);
-
-  const fetchFlights = async () => {
+  /**
+   * Fetches flight data from the server using the current URL search parameters.
+   * Parses it into the typed `Flight[]` and updates state accordingly.
+   */
+  const fetchFlights = useCallback(async () => {
     setLoading(true);
     try {
-      const paramsObj: Record<string, any> = {};
-      for (const [key, val] of searchParams.entries()) {
-        paramsObj[key] = val;
-      }
-      paramsObj.size = PAGE_SIZE;
-      const response = await searchFlights(paramsObj);
+      const typedParams: FlightSearchParams = {
+        departureAirportKeyword: searchParams.get("departureAirportKeyword") ?? "",
+        isDepartureCode: searchParams.get("isDepartureCode") === "true",
+        arrivalAirportKeyword: searchParams.get("arrivalAirportKeyword") ?? "",
+        isArrivalCode: searchParams.get("isArrivalCode") === "true",
+        departureDate: searchParams.get("departureDate") ?? "",
+        arrivalDate: searchParams.get("arrivalDate") ?? "",
+        numAdults: parseInt(searchParams.get("numAdults") ?? "1", 10),
+        currency: searchParams.get("currency") ?? "MXN",
+        nonStop: searchParams.get("nonStop") === "true",
+        sortBy: searchParams.get("sortBy") ?? "",
+        order: searchParams.get("order") ?? "",
+        page: parseInt(searchParams.get("page") ?? "0", 10),
+      };
+
+      const response = await searchFlights(typedParams);
       setFlights(response.data);
       setTotalCount(response.counter);
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchParams]);
+
+  useEffect(() => {
+    fetchFlights();
+  }, [fetchFlights]);
 
   /**
    * Handles the callback when the user submits the search form.
@@ -140,9 +155,11 @@ export const SearchPage: React.FC = () => {
 
       <div className="max-w-6xl mx-auto py-6 px-4">
         {loading && <p className="text-gray-700">Loading flights...</p>}
+
         {!loading && flights.length === 0 && (
           <p className="text-red-500">No flight information found. Try another search.</p>
         )}
+
         {!loading && flights.length > 0 && (
           <div className="grid gap-4">
             {flights.map((flight) => (
@@ -154,6 +171,7 @@ export const SearchPage: React.FC = () => {
             ))}
           </div>
         )}
+
         {!loading && flights.length > 0 && (
           <div className="mt-4 flex justify-center items-center space-x-4">
             <button

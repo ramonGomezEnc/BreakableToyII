@@ -22,13 +22,17 @@ const formatTime = (datetime: string): string => {
 
 /**
  * Renders a card with basic flight information (departure, arrival, duration, price, etc.).
- * @param flight The flight data to display.
- * @param onCardClick Callback when the card is clicked.
+ * This version supports multiple itineraries, but displays only the first itinerary
+ * for brevity (commonly used as a summary).
  */
 export const FlightCard: FC<FlightCardProps> = ({ flight, onCardClick }) => {
-  const departureTime = formatTime(flight.initialDeparture);
-  const arrivalTime = formatTime(flight.finalArrival);
-  const numberOfStops = flight.stops ? flight.stops.length : 0;
+  // Take the FIRST itinerary as a summarized view
+  const firstItinerary = flight.itineraries[0];
+
+  const departureTime = formatTime(firstItinerary.initialDeparture);
+  const arrivalTime = formatTime(firstItinerary.finalArrival);
+
+  const numberOfStops = firstItinerary.stops ? firstItinerary.stops.length : 0;
   const stopsLabel =
     numberOfStops === 0
       ? "(Nonstop)"
@@ -52,15 +56,15 @@ export const FlightCard: FC<FlightCardProps> = ({ flight, onCardClick }) => {
           {departureTime} - {arrivalTime}
         </p>
         <p className="mt-1 text-sm">
-          {flight.departureAirportName} ({flight.departureAirportCode}) →{" "}
-          {flight.arrivalAirportName} ({flight.arrivalAirportCode})
+          {firstItinerary.departureAirportName} ({firstItinerary.departureAirportCode}) →{" "}
+          {firstItinerary.arrivalAirportName} ({firstItinerary.arrivalAirportCode})
         </p>
         <p className="mt-1 text-sm text-gray-700">
-          {flight.totalFlightTime} {stopsLabel}
+          {firstItinerary.totalFlightTime} {stopsLabel}
         </p>
         {numberOfStops > 0 && (
           <ul className="mt-1 text-xs text-gray-500">
-            {flight.stops?.map((stop, index) => (
+            {firstItinerary.stops?.map((stop, index) => (
               <li key={index}>
                 {stop.layoverTime} at {stop.airportCode}
               </li>
@@ -68,15 +72,12 @@ export const FlightCard: FC<FlightCardProps> = ({ flight, onCardClick }) => {
           </ul>
         )}
         <p className="mt-2 text-sm text-gray-800 font-medium">
-          {flight.airlineName} ({flight.airlineCode})
+          {firstItinerary.airlineName} ({firstItinerary.airlineCode})
         </p>
-        {flight.operatingAirlineName && (
-          <p className="text-xs text-gray-500">
-            Operated by {flight.operatingAirlineName} ({flight.operatingAirlineCode})
-          </p>
-        )}
       </div>
+
       <div className="hidden md:block w-px bg-gray-300 mx-6 my-2"></div>
+
       <div className="mt-4 md:mt-0 md:w-1/4 flex flex-col items-start md:items-end">
         <p className="text-lg font-bold text-gray-900">
           ${flight.totalPrice} {flight.currency}

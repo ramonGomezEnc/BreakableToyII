@@ -28,6 +28,17 @@ export interface Amenity {
     travelerFares: TravelerFare[];
     layoverTime?: string;
   }
+
+  export interface ItineraryDetail {
+    initialDeparture: string;
+    finalArrival: string;
+    departureAirportCode: string;
+    departureAirportName: string;
+    arrivalAirportCode: string;
+    arrivalAirportName: string;
+    totalFlightTime: string;
+    segments: Segment[];
+  }
   
   /**
    * Represents a fee or charge in the flight's price breakdown.
@@ -62,14 +73,7 @@ export interface Amenity {
    */
   export interface FlightDetail {
     id: string;
-    initialDeparture: string;
-    finalArrival: string;
-    departureAirportCode: string;
-    departureAirportName: string;
-    arrivalAirportCode: string;
-    arrivalAirportName: string;
-    totalFlightTime: string;
-    segments: Segment[];
+    itineraries: ItineraryDetail[];
     priceBreakdown: PriceBreakdown;
   }
   

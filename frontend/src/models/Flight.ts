@@ -9,8 +9,7 @@ export interface Stop {
   /**
    * Represents basic flight information (for listing or flight cards).
    */
-  export interface Flight {
-    id: string;
+  export interface Itinerary {
     initialDeparture: string;
     finalArrival: string;
     departureAirportCode: string;
@@ -19,12 +18,14 @@ export interface Stop {
     arrivalAirportName: string;
     airlineCode: string;
     airlineName: string;
-    operatingAirlineCode?: string;
-    operatingAirlineName?: string;
     totalFlightTime: string;
     stops?: Stop[];
+  }
+
+  export interface Flight {
+    id: string;
+    itineraries: Itinerary[];
     totalPrice: string;
     currency: string;
     pricePerTraveler: string;
   }
-  
