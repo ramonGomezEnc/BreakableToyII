@@ -23,6 +23,8 @@ export interface FlightSearchParams {
  * @returns An object containing flight data and a total count of results.
  */
 export const searchFlights = async (params: FlightSearchParams) => {
+  console.log(BASE_URL)
+
   const response = await axios.get(`${BASE_URL}flights`, {
     params: {
       departureAirportKeyword: params.departureAirportKeyword,
@@ -39,5 +41,7 @@ export const searchFlights = async (params: FlightSearchParams) => {
       page: params.page,
     },
   });
+
+  console.log(response)
   return response.data;
 };

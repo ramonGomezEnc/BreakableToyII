@@ -46,7 +46,16 @@ export const FlightDetailModal: React.FC<FlightDetailModalProps> = ({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-md p-4 max-w-4xl w-full relative"
+        className="
+          bg-white 
+          rounded-md 
+          p-4 
+          max-w-4xl 
+          w-full 
+          relative 
+          overflow-y-auto 
+          max-h-[80vh]
+        "
         onClick={(e) => e.stopPropagation()}
       >
         <button
