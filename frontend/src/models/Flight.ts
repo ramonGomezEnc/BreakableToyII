@@ -1,5 +1,5 @@
 /**
- * Representa una escala intermedia en un vuelo.
+ * Represents an intermediate stop in a flight.
  */
 export interface Stop {
     airportCode: string;
@@ -7,7 +7,7 @@ export interface Stop {
   }
   
   /**
-   * Representa un vuelo básico para mostrar en listas o tarjetas.
+   * Represents basic flight information (for listing or flight cards).
    */
   export interface Flight {
     id: string;

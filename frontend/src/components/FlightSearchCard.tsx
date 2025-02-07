@@ -1,17 +1,41 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { FC } from "react";
+import { FC, FormEvent, useEffect } from "react";
 import { useFlightSearchForm } from "../hooks/useFlightSearchForm";
 
 interface FlightSearchCardProps {
   onSearch: (params: Record<string, any>) => void;
+  initialData?: Record<string, any>;
+  layoutClasses?: string;
+  layoutForm?: string;
 }
 
-export const FlightSearchCard: FC<FlightSearchCardProps> = ({ onSearch }) => {
-  const { formData, errors, handleChange, validateForm } = useFlightSearchForm();
+/**
+ * A component that shows a flight search form, using a custom form hook.
+ * Receives optional initial data to populate the form, and a callback for performing the search.
+ * @param onSearch Callback to handle the final search submission.
+ * @param initialData Optional initial values (usually from the URL or other state).
+ * @param layoutClasses Classes to style the container if needed.
+ */
+export const FlightSearchCard: FC<FlightSearchCardProps> = ({
+  onSearch,
+  initialData = {},
+  layoutClasses = "bg-white shadow-md rounded-lg p-6 w-full max-w-md",
+  layoutForm = "flex flex-col space-y-4"
+}) => {
+  const { formData, errors, handleChange, validateForm, setFormData } =
+    useFlightSearchForm(initialData);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      ...initialData,
+    }));
+  }, [initialData, setFormData]);
+
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
+
     const queryParams = {
       departureAirportKeyword: formData.departureAirportKeyword,
       isDepartureCode: formData.isDepartureCode,
@@ -31,145 +55,110 @@ export const FlightSearchCard: FC<FlightSearchCardProps> = ({ onSearch }) => {
   };
 
   return (
-    <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-md">
-      <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
-
-        <div>
-          <label className="block text-gray-700 mb-1" htmlFor="departureAirportKeyword">
-            Departure Airport
-          </label>
+    <div className={layoutClasses}>
+      <form onSubmit={handleSubmit} className={layoutForm}>
+        <div className="flex flex-col">
+          <label className="text-sm font-medium">Departure Airport</label>
           <input
             type="text"
-            id="departureAirportKeyword"
             name="departureAirportKeyword"
             value={formData.departureAirportKeyword}
             onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded"
-            placeholder="E.g., MEX or Mexico City"
+            className="p-2 border border-gray-300 rounded"
+            placeholder="e.g. MEX"
           />
           {errors.departureAirportKeyword && (
-            <p className="text-red-500 text-sm">
-              {errors.departureAirportKeyword}
-            </p>
+            <p className="text-red-500 text-xs">{errors.departureAirportKeyword}</p>
           )}
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center mt-4">
           <input
             type="checkbox"
-            id="isDepartureCode"
             name="isDepartureCode"
             checked={formData.isDepartureCode}
             onChange={handleChange}
-            className="h-4 w-4"
+            className="mr-2"
           />
-          <label htmlFor="isDepartureCode" className="text-gray-700">
-            Use as IATA Code
-          </label>
+          <label className="text-sm">Use IATA code</label>
         </div>
 
-        <div>
-          <label className="block text-gray-700 mb-1" htmlFor="arrivalAirportKeyword">
-            Arrival Airport
-          </label>
+        <div className="flex flex-col">
+          <label className="text-sm font-medium">Arrival Airport</label>
           <input
             type="text"
-            id="arrivalAirportKeyword"
             name="arrivalAirportKeyword"
             value={formData.arrivalAirportKeyword}
             onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded"
-            placeholder="E.g., JFK or New York"
+            className="p-2 border border-gray-300 rounded"
+            placeholder="e.g. CAN"
           />
           {errors.arrivalAirportKeyword && (
-            <p className="text-red-500 text-sm">
-              {errors.arrivalAirportKeyword}
-            </p>
+            <p className="text-red-500 text-xs">{errors.arrivalAirportKeyword}</p>
           )}
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center mt-4">
           <input
             type="checkbox"
-            id="isArrivalCode"
             name="isArrivalCode"
             checked={formData.isArrivalCode}
             onChange={handleChange}
-            className="h-4 w-4"
+            className="mr-2"
           />
-          <label htmlFor="isArrivalCode" className="text-gray-700">
-            Use as IATA Code
-          </label>
+          <label className="text-sm">Use IATA code</label>
         </div>
 
-        <div>
-          <label className="block text-gray-700 mb-1" htmlFor="departureDate">
-            Departure Date
-          </label>
+        <div className="flex flex-col">
+          <label className="text-sm font-medium">Departure Date</label>
           <input
             type="date"
-            id="departureDate"
             name="departureDate"
             value={formData.departureDate}
             onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded"
+            className="p-2 border border-gray-300 rounded"
           />
           {errors.departureDate && (
-            <p className="text-red-500 text-sm">
-              {errors.departureDate}
-            </p>
+            <p className="text-red-500 text-xs">{errors.departureDate}</p>
           )}
         </div>
 
-        <div>
-          <label className="block text-gray-700 mb-1" htmlFor="arrivalDate">
-            Arrival Date (optional)
-          </label>
+        <div className="flex flex-col">
+          <label className="text-sm font-medium">Arrival Date</label>
           <input
             type="date"
-            id="arrivalDate"
             name="arrivalDate"
             value={formData.arrivalDate}
             onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded"
+            className="p-2 border border-gray-300 rounded"
           />
           {errors.arrivalDate && (
-            <p className="text-red-500 text-sm">
-              {errors.arrivalDate}
-            </p>
+            <p className="text-red-500 text-xs">{errors.arrivalDate}</p>
           )}
         </div>
 
-        <div>
-          <label className="block text-gray-700 mb-1" htmlFor="numAdults">
-            Number of Adults
-          </label>
+        <div className="flex flex-col">
+          <label className="text-sm font-medium"># Adults</label>
           <input
             type="number"
-            id="numAdults"
             name="numAdults"
+            min={1}
             value={formData.numAdults}
             onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded"
-            min={1}
+            className="p-2 border border-gray-300 rounded"
           />
           {errors.numAdults && (
-            <p className="text-red-500 text-sm">
-              {errors.numAdults}
-            </p>
+            <p className="text-red-500 text-xs">{errors.numAdults}</p>
           )}
         </div>
 
-        <div>
-          <label className="block text-gray-700 mb-1" htmlFor="currency">
-            Currency
-          </label>
+        <div className="flex flex-col">
+          <label className="text-sm font-medium">Currency</label>
           <select
-            id="currency"
             name="currency"
             value={formData.currency}
             onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded"
+            className="p-2 border border-gray-300 rounded"
           >
             <option value="MXN">MXN</option>
             <option value="USD">USD</option>
@@ -177,25 +166,22 @@ export const FlightSearchCard: FC<FlightSearchCardProps> = ({ onSearch }) => {
           </select>
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center mt-4">
           <input
             type="checkbox"
-            id="nonStop"
             name="nonStop"
             checked={formData.nonStop}
             onChange={handleChange}
-            className="h-4 w-4"
+            className="mr-2"
           />
-          <label htmlFor="nonStop" className="text-gray-700">
-            Direct Flights Only
-          </label>
+          <label className="text-sm">Non-stop flights only</label>
         </div>
 
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition-colors"
+          className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors h-fit"
         >
-          Search Flights
+          Search
         </button>
       </form>
     </div>

@@ -1,5 +1,5 @@
 /**
- * Representa una amenidad en la tarifa de un viajero (por ejemplo, equipaje incluido).
+ * Represents an amenity in a traveler's fare (e.g., baggage, seat selection).
  */
 export interface Amenity {
     name: string;
@@ -7,7 +7,7 @@ export interface Amenity {
   }
   
   /**
-   * Representa el detalle de la tarifa de un viajero (cabina, clase, amenidades, etc.).
+   * Represents a traveler's fare details (cabin, class, amenities, etc.).
    */
   export interface TravelerFare {
     cabin: string;
@@ -16,7 +16,7 @@ export interface Amenity {
   }
   
   /**
-   * Representa un segmento dentro de un vuelo, con horario, aerolínea, número de vuelo, etc.
+   * Represents a segment in a flight, including airline, flight number, timing, etc.
    */
   export interface Segment {
     departureTime: string;
@@ -30,7 +30,7 @@ export interface Amenity {
   }
   
   /**
-   * Representa un cargo o comisión dentro del desglose de precios de un vuelo.
+   * Represents a fee or charge in the flight's price breakdown.
    */
   export interface Fee {
     amount: string;
@@ -38,7 +38,7 @@ export interface Amenity {
   }
   
   /**
-   * Representa el precio asignado a un viajero específico (adulto, niño, etc.).
+   * Represents the price assigned to a specific traveler (adult, child, etc.).
    */
   export interface TravelerPrice {
     travelerId: string;
@@ -47,7 +47,7 @@ export interface Amenity {
   }
   
   /**
-   * Representa el desglose total de precios de un vuelo, incluyendo cargos, divisa y costos por viajero.
+   * Represents the total breakdown of the flight's pricing, including fees, currency, etc.
    */
   export interface PriceBreakdown {
     basePrice: string;
@@ -58,7 +58,7 @@ export interface Amenity {
   }
   
   /**
-   * Representa el detalle completo de un vuelo, incluyendo segmentos y desglose de precios.
+   * Represents the complete detail of a flight, including segments and a price breakdown.
    */
   export interface FlightDetail {
     id: string;

@@ -2,7 +2,7 @@ import axios from "axios";
 
 const BASE_URL = "http://localhost:9090/api/v1/";
 
-interface FlightSearchParams {
+export interface FlightSearchParams {
   departureAirportKeyword: string;
   isDepartureCode: boolean;
   arrivalAirportKeyword: string;
@@ -12,13 +12,18 @@ interface FlightSearchParams {
   numAdults: number;
   currency: string;
   nonStop: boolean;
-  sortBy?: string; // price, duration
-  order?: string;  // ASC, DES
-  page?: number; 
+  sortBy?: string;
+  order?: string;
+  page?: number;
 }
 
+/**
+ * Calls the flight search endpoint to get paginated, filtered results.
+ * @param params Search parameters to filter flights.
+ * @returns An object containing flight data and a total count of results.
+ */
 export const searchFlights = async (params: FlightSearchParams) => {
-  const response = await axios.get(BASE_URL + "flights", {
+  const response = await axios.get(`${BASE_URL}flights`, {
     params: {
       departureAirportKeyword: params.departureAirportKeyword,
       isDepartureCode: params.isDepartureCode,
@@ -31,11 +36,8 @@ export const searchFlights = async (params: FlightSearchParams) => {
       nonStop: params.nonStop,
       sortBy: params.sortBy,
       order: params.order,
-      page: params.page
+      page: params.page,
     },
   });
-
-  console.log(response)
-
   return response.data;
 };

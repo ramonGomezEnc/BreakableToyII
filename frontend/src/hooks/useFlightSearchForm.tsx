@@ -1,12 +1,11 @@
 import { useState } from "react";
 
-// Define the flight search form interface
 interface FlightSearchForm {
   departureAirportKeyword: string;
   isDepartureCode: boolean;
   arrivalAirportKeyword: string;
   isArrivalCode: boolean;
-  departureDate: string; // using string as the value for date inputs
+  departureDate: string;
   arrivalDate: string;
   numAdults: number;
   currency: "MXN" | "USD" | "EUR";
@@ -15,17 +14,22 @@ interface FlightSearchForm {
 
 const today = new Date().toISOString().split("T")[0];
 
-export const useFlightSearchForm = () => {
+/**
+ * Custom hook that manages state and validation for a flight search form.
+ * @param initialValues Optional initial values for the form.
+ * @returns An object containing form data, errors, and form handlers.
+ */
+export const useFlightSearchForm = (initialValues?: Partial<FlightSearchForm>) => {
   const [formData, setFormData] = useState<FlightSearchForm>({
-    departureAirportKeyword: "",
-    isDepartureCode: true,
-    arrivalAirportKeyword: "",
-    isArrivalCode: true,
-    departureDate: today, // default to the current date
-    arrivalDate: "",
-    numAdults: 1,
-    currency: "MXN",
-    nonStop: false,
+    departureAirportKeyword: initialValues?.departureAirportKeyword || "",
+    isDepartureCode: initialValues?.isDepartureCode ?? true,
+    arrivalAirportKeyword: initialValues?.arrivalAirportKeyword || "",
+    isArrivalCode: initialValues?.isArrivalCode ?? true,
+    departureDate: initialValues?.departureDate || today,
+    arrivalDate: initialValues?.arrivalDate || "",
+    numAdults: initialValues?.numAdults ?? 1,
+    currency: initialValues?.currency || "MXN",
+    nonStop: initialValues?.nonStop ?? false,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -34,7 +38,6 @@ export const useFlightSearchForm = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value, type } = e.target;
-    
     setFormData((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
@@ -45,18 +48,16 @@ export const useFlightSearchForm = () => {
     const newErrors: Record<string, string> = {};
 
     if (formData.isDepartureCode && formData.departureAirportKeyword.length !== 3) {
-      newErrors.departureAirportKeyword =
-        "The departure airport code must have 3 letters (IATA).";
+      newErrors.departureAirportKeyword = "Departure airport code must have 3 letters.";
     }
 
     if (formData.isArrivalCode && formData.arrivalAirportKeyword.length !== 3) {
-      newErrors.arrivalAirportKeyword =
-        "The arrival airport code must have 3 letters (IATA).";
+      newErrors.arrivalAirportKeyword = "Arrival airport code must have 3 letters.";
     }
 
     if (formData.departureAirportKeyword === formData.arrivalAirportKeyword) {
       newErrors.departureAirportKeyword =
-        "The departure airport code cannot be the same as the return airport code.";
+        "Departure airport code cannot be the same as the arrival airport code.";
     }
 
     const todayDate = new Date(today);
@@ -64,16 +65,13 @@ export const useFlightSearchForm = () => {
     const arrival = formData.arrivalDate ? new Date(formData.arrivalDate) : null;
 
     if (departure < todayDate) {
-      newErrors.departureDate =
-        "The departure date cannot be earlier than today.";
+      newErrors.departureDate = "Departure date cannot be earlier than today.";
     }
 
     if (arrival && arrival < departure) {
-      newErrors.arrivalDate =
-        "The arrival date cannot be earlier than the departure date.";
+      newErrors.arrivalDate = "Arrival date cannot be earlier than the departure date.";
     }
 
-    // numAdults validation
     if (formData.numAdults < 1) {
       newErrors.numAdults = "There must be at least 1 adult.";
     }
