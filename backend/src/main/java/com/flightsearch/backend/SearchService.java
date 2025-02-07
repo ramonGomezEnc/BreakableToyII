@@ -27,7 +27,9 @@ public class SearchService {
     private final Map<String, List<FlightOffer>> flightOffersCache = new HashMap<>();
     private final Map<String, Dictionaries> dictionariesCache = new HashMap<>();
     private final Map<String, List<Map<String, Object>>> mappedFlightsCache = new HashMap<>();
+    private final Map<String, Integer> cacheCountByKey = new HashMap<>();
     private String cacheKey = "";
+
 
     @Autowired
     public SearchService(
@@ -56,7 +58,7 @@ public class SearchService {
                 + numAdults + "_" + currency + "_" + nonStop;
     }
 
-    public List<Map<String, Object>> getFlightOptions(
+    public Map<String, Object> getFlightOptions(
             String departureAirportKeyword,
             Boolean isDepartureCode,
             String arrivalAirportKeyword,
@@ -89,6 +91,7 @@ public class SearchService {
                         ? arrivalAirportKeyword
                         : amadeusFlightClient.fetchAirport(arrivalAirportKeyword).getIataCode();
 
+                // Llamada a AmadeusClient para obtener la data real
                 GeneralResponse amadeusResponse = amadeusFlightClient.fetchFlightData(
                         departureAirportCode,
                         arrivalAirportCode,
@@ -101,6 +104,7 @@ public class SearchService {
 
                 flightOffersCache.put(cacheKey, amadeusResponse.getData());
                 dictionariesCache.put(cacheKey, amadeusResponse.getDictionaries());
+                cacheCountByKey.put(cacheKey, amadeusResponse.getMeta().getCount());
             }
 
             List<FlightOffer> flightList = flightOffersCache.get(cacheKey);
@@ -110,8 +114,16 @@ public class SearchService {
         }
 
         List<Map<String, Object>> mappedFlights = new ArrayList<>(mappedFlightsCache.get(cacheKey));
+        int totalCount = cacheCountByKey.get(cacheKey);
         sortingUtils.applySorting(mappedFlights, sortBy, order);
-        return paginationUtils.applyPagination(mappedFlights, page, size);
+        List<Map<String, Object>> paginatedList = paginationUtils.applyPagination(mappedFlights, page, size);
+
+        Map<String, Object> response = new HashMap<>();
+
+        response.put("counter", totalCount);
+        response.put("data", paginatedList);
+
+        return response;
     }
 
     public Map<String, Object> getDetailedFlightOption(String flightOfferId) throws JsonProcessingException {

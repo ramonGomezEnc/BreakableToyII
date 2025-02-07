@@ -21,7 +21,7 @@ public class SearchController {
     }
 
     @GetMapping("/flights")
-    public ResponseEntity<List<Map<String, Object>>> getAllFlightOptions(
+    public ResponseEntity<Map<String, Object>> getAllFlightOptions(
             @RequestParam String departureAirportKeyword,
             @RequestParam(defaultValue = "true") Boolean isDepartureCode,
             @RequestParam String arrivalAirportKeyword,
@@ -31,14 +31,14 @@ public class SearchController {
             @RequestParam int numAdults,
             @RequestParam CurrencyType currency,
             @RequestParam boolean nonStop,
-            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortBy, //price, duration
             @RequestParam(required = false) String order, //ASC, DES
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
 
         try {
-            List<Map<String, Object>> flights = service.getFlightOptions(
+            Map<String, Object> flights = service.getFlightOptions(
                     departureAirportKeyword,
                     isDepartureCode,
                     arrivalAirportKeyword,
