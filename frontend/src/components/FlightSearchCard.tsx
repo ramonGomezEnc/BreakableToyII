@@ -36,7 +36,7 @@ export const FlightSearchCard: FC<FlightSearchCardProps> = ({ onSearch }) => {
 
         <div>
           <label className="block text-gray-700 mb-1" htmlFor="departureAirportKeyword">
-            Aeropuerto de salida
+            Departure Airport
           </label>
           <input
             type="text"
@@ -45,7 +45,7 @@ export const FlightSearchCard: FC<FlightSearchCardProps> = ({ onSearch }) => {
             value={formData.departureAirportKeyword}
             onChange={handleChange}
             className="w-full p-2 border border-gray-300 rounded"
-            placeholder="Ej: MEX o Mexico City"
+            placeholder="E.g., MEX or Mexico City"
           />
           {errors.departureAirportKeyword && (
             <p className="text-red-500 text-sm">
@@ -64,13 +64,13 @@ export const FlightSearchCard: FC<FlightSearchCardProps> = ({ onSearch }) => {
             className="h-4 w-4"
           />
           <label htmlFor="isDepartureCode" className="text-gray-700">
-            Usar como Código IATA
+            Use as IATA Code
           </label>
         </div>
 
         <div>
           <label className="block text-gray-700 mb-1" htmlFor="arrivalAirportKeyword">
-            Aeropuerto de llegada
+            Arrival Airport
           </label>
           <input
             type="text"
@@ -79,7 +79,7 @@ export const FlightSearchCard: FC<FlightSearchCardProps> = ({ onSearch }) => {
             value={formData.arrivalAirportKeyword}
             onChange={handleChange}
             className="w-full p-2 border border-gray-300 rounded"
-            placeholder="Ej: JFK o New York"
+            placeholder="E.g., JFK or New York"
           />
           {errors.arrivalAirportKeyword && (
             <p className="text-red-500 text-sm">
@@ -98,13 +98,13 @@ export const FlightSearchCard: FC<FlightSearchCardProps> = ({ onSearch }) => {
             className="h-4 w-4"
           />
           <label htmlFor="isArrivalCode" className="text-gray-700">
-            Usar como Código IATA
+            Use as IATA Code
           </label>
         </div>
 
         <div>
           <label className="block text-gray-700 mb-1" htmlFor="departureDate">
-            Fecha de salida
+            Departure Date
           </label>
           <input
             type="date"
@@ -123,7 +123,7 @@ export const FlightSearchCard: FC<FlightSearchCardProps> = ({ onSearch }) => {
 
         <div>
           <label className="block text-gray-700 mb-1" htmlFor="arrivalDate">
-            Fecha de llegada (opcional)
+            Arrival Date (optional)
           </label>
           <input
             type="date"
@@ -142,7 +142,7 @@ export const FlightSearchCard: FC<FlightSearchCardProps> = ({ onSearch }) => {
 
         <div>
           <label className="block text-gray-700 mb-1" htmlFor="numAdults">
-            Número de adultos
+            Number of Adults
           </label>
           <input
             type="number"
@@ -162,7 +162,7 @@ export const FlightSearchCard: FC<FlightSearchCardProps> = ({ onSearch }) => {
 
         <div>
           <label className="block text-gray-700 mb-1" htmlFor="currency">
-            Moneda
+            Currency
           </label>
           <select
             id="currency"
@@ -187,7 +187,7 @@ export const FlightSearchCard: FC<FlightSearchCardProps> = ({ onSearch }) => {
             className="h-4 w-4"
           />
           <label htmlFor="nonStop" className="text-gray-700">
-            Solo vuelos directos
+            Direct Flights Only
           </label>
         </div>
 
@@ -195,7 +195,7 @@ export const FlightSearchCard: FC<FlightSearchCardProps> = ({ onSearch }) => {
           type="submit"
           className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition-colors"
         >
-          Buscar Vuelos
+          Search Flights
         </button>
       </form>
     </div>

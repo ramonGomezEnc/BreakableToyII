@@ -1,8 +1,10 @@
-import React, { FC } from "react";
+// FlightCard.tsx
+
+import { FC } from "react";
 
 interface Stop {
   airportCode: string;
-  layoverTime: string; // p. ej.: "1h 30m"
+  layoverTime: string; // e.g.: "1h 30m"
 }
 
 interface Flight {
@@ -18,7 +20,7 @@ interface Flight {
   operatingAirlineCode?: string;
   operatingAirlineName?: string;
   totalFlightTime: string;      // "27h 00m"
-  stops?: Stop[];                // escalas
+  stops?: Stop[];                // layovers
   totalPrice: string;           // "29952.00"
   currency: string;             // "MXN"
   pricePerTraveler: string;     // "29952.00"
@@ -29,7 +31,7 @@ interface FlightCardProps {
   onCardClick?: () => void;
 }
 
-// Función de ayuda para formatear solo la hora y minutos en 12h con am/pm
+// Helper function to format time to 12-hour format with am/pm
 const formatTime = (datetime: string): string => {
   const options: Intl.DateTimeFormatOptions = {
     hour: "numeric",
@@ -59,52 +61,51 @@ export const FlightCard: FC<FlightCardProps> = ({ flight, onCardClick }) => {
 
   return (
     <div onClick={handleClick} className="border border-gray-300 rounded-md p-4 flex flex-col md:flex-row md:justify-between md:items-start mb-4 bg-white">
-      {/* left col */}
+      {/* Left column */}
       <div className="md:flex-1">
 
-        {/* times */}
+        {/* Times */}
         <p className="text-sm font-semibold">
           {departureTime} - {arrivalTime}
         </p>
 
-        {/* trayectory */}
+        {/* Trajectory */}
         <p className="mt-1 text-sm">
           {flight.departureAirportName} ({flight.departureAirportCode}) &rarr;{" "}
           {flight.arrivalAirportName} ({flight.arrivalAirportCode})
         </p>
 
-        {/* durations */}
+        {/* Durations */}
         <p className="mt-1 text-sm text-gray-700">
           {flight.totalFlightTime} {stopsLabel}
         </p>
 
-        {/* stops */}
+        {/* Stops */}
         {numberOfStops > 0 && (
         <ul className="mt-1 text-xs text-gray-500">
             {flight.stops?.map((stop, index) => (
             <li key={index}>
-                {stop.layoverTime} en {stop.airportCode}
+                {stop.layoverTime} at {stop.airportCode}
             </li>
             ))}
         </ul>
         )}
 
-
-        {/* airlines */}
+        {/* Airlines */}
         <p className="mt-2 text-sm text-gray-800 font-medium">
           {flight.airlineName} ({flight.airlineCode})
         </p>
         {flight.operatingAirlineName && (
           <p className="text-xs text-gray-500">
-            Operado por {flight.operatingAirlineName} ({flight.operatingAirlineCode})
+            Operated by {flight.operatingAirlineName} ({flight.operatingAirlineCode})
           </p>
         )}
       </div>
 
-        {/* medium col  */}
+      {/* Medium column  */}
       <div className="hidden md:block w-px bg-gray-300 mx-6 my-2"></div>
 
-      {/* right col  */}
+      {/* Right column  */}
       <div className="mt-4 md:mt-0 md:w-1/4 flex flex-col items-start md:items-end">
         <p className="text-lg font-bold text-gray-900">
           ${flight.totalPrice} {flight.currency}
@@ -114,7 +115,7 @@ export const FlightCard: FC<FlightCardProps> = ({ flight, onCardClick }) => {
         <p className="text-md font-semibold mt-2">
           ${flight.pricePerTraveler} {flight.currency}
         </p>
-        <p className="text-xs text-gray-500">por viajero</p>
+        <p className="text-xs text-gray-500">per traveler</p>
       </div>
     </div>
   );

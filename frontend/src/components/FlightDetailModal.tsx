@@ -1,3 +1,5 @@
+// FlightDetailModal.tsx
+
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -88,14 +90,14 @@ export const FlightDetailModal: React.FC<FlightDetailModalProps> = ({
   return (
     <div
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-      onClick={onClose} // Cerrar al hacer click en overlay
+      onClick={onClose} // Close on overlay click
     >
-      {/* Evitar que el click dentro del modal cierre */}
+      {/* Prevent modal from closing when clicking inside */}
       <div
         className="bg-white rounded-md p-4 max-w-4xl w-full relative"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Botón (X) para cerrar */}
+        {/* Close button (X) */}
         <button
           className="absolute top-2 right-2 text-gray-600 hover:text-gray-800"
           onClick={onClose}
@@ -103,12 +105,12 @@ export const FlightDetailModal: React.FC<FlightDetailModalProps> = ({
           ✕
         </button>
 
-        {loading && <p className="text-gray-600">Cargando detalles...</p>}
+        {loading && <p className="text-gray-600">Loading details...</p>}
         {!loading && flightDetail && (
           <div className="space-y-4">
-            <h3 className="text-xl font-bold">Detalles de Vuelo ID: {flightId}</h3>
+            <h3 className="text-xl font-bold">Flight Details ID: {flightId}</h3>
 
-            {/* Segmentos */}
+            {/* Segments */}
             {flightDetail.segments.map((segment, i) => (
               <div key={i} className="border border-gray-200 rounded p-3 mb-4 flex justify-between">
                 <div className="flex-1">
@@ -126,32 +128,12 @@ export const FlightDetailModal: React.FC<FlightDetailModalProps> = ({
                   <p className="text-xs text-gray-500">
                     {segment.aircraftType}
                   </p>
-                  {/* Mostrar layover si lo hay */}
+                  {/* Show layover if available */}
                   {segment.layoverTime && (
                     <p className="text-xs text-gray-400 mt-1">
-                      Escala: {segment.layoverTime}
+                      Layover: {segment.layoverTime}
                     </p>
                   )}
-                </div>
-
-                {/* Módulo de travelerFares */}
-                <div className="border border-gray-300 p-2 ml-2 w-48">
-                  <p className="text-sm font-semibold">Traveler Fares</p>
-                  {segment.travelerFares.map((fare, idx) => (
-                    <div key={idx} className="mt-2">
-                      <p className="text-xs font-medium text-gray-700">
-                        {fare.cabin} - Class {fare.class}
-                      </p>
-                      <ul className="list-disc list-inside text-xs">
-                        {fare.amenities.map((amenity, k) => (
-                          <li key={k} className="text-gray-600">
-                            {amenity.name}
-                            {amenity.chargeable && " (Cargo extra)"}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
                 </div>
               </div>
             ))}
@@ -178,7 +160,7 @@ export const FlightDetailModal: React.FC<FlightDetailModalProps> = ({
                 </p>
               </div>
 
-              {/* Precio por viajero */}
+              {/* Price per traveler */}
               <div className="border border-gray-200 p-3 flex-1">
                 <h4 className="font-semibold">Per Traveler</h4>
                 {flightDetail.priceBreakdown.pricePerTraveler.map((tp, i) => (

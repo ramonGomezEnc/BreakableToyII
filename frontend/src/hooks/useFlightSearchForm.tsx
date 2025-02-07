@@ -1,12 +1,12 @@
 import { useState } from "react";
 
-// Definimos la interface del formulario
+// Define the flight search form interface
 interface FlightSearchForm {
   departureAirportKeyword: string;
   isDepartureCode: boolean;
   arrivalAirportKeyword: string;
   isArrivalCode: boolean;
-  departureDate: string; // usando string como valor de los inputs date
+  departureDate: string; // using string as the value for date inputs
   arrivalDate: string;
   numAdults: number;
   currency: "MXN" | "USD" | "EUR";
@@ -21,7 +21,7 @@ export const useFlightSearchForm = () => {
     isDepartureCode: true,
     arrivalAirportKeyword: "",
     isArrivalCode: true,
-    departureDate: today, // default en la fecha actual
+    departureDate: today, // default to the current date
     arrivalDate: "",
     numAdults: 1,
     currency: "MXN",
@@ -41,25 +41,23 @@ export const useFlightSearchForm = () => {
     }));
   };
 
-
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
     if (formData.isDepartureCode && formData.departureAirportKeyword.length !== 3) {
       newErrors.departureAirportKeyword =
-        "El código de aeropuerto de salida debe tener 3 letras (IATA).";
+        "The departure airport code must have 3 letters (IATA).";
     }
 
     if (formData.isArrivalCode && formData.arrivalAirportKeyword.length !== 3) {
       newErrors.arrivalAirportKeyword =
-        "El código de aeropuerto de llegada debe tener 3 letras (IATA).";
+        "The arrival airport code must have 3 letters (IATA).";
     }
 
     if (formData.departureAirportKeyword === formData.arrivalAirportKeyword) {
       newErrors.departureAirportKeyword =
-        "El código de aeropuerto de salida no puede ser el mismo que del regreso.";
+        "The departure airport code cannot be the same as the return airport code.";
     }
-
 
     const todayDate = new Date(today);
     const departure = new Date(formData.departureDate);
@@ -67,17 +65,17 @@ export const useFlightSearchForm = () => {
 
     if (departure < todayDate) {
       newErrors.departureDate =
-        "La fecha de salida no puede ser anterior a hoy.";
+        "The departure date cannot be earlier than today.";
     }
 
     if (arrival && arrival < departure) {
       newErrors.arrivalDate =
-        "La fecha de llegada no puede ser anterior a la de salida.";
+        "The arrival date cannot be earlier than the departure date.";
     }
 
-    // Validación numAdults
+    // numAdults validation
     if (formData.numAdults < 1) {
-      newErrors.numAdults = "Debe haber al menos 1 adulto.";
+      newErrors.numAdults = "There must be at least 1 adult.";
     }
 
     setErrors(newErrors);
