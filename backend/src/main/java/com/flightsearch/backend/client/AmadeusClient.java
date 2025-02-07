@@ -7,13 +7,12 @@ import com.flightsearch.backend.model.Airport;
 import com.flightsearch.backend.model.flightoptions.GeneralResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.w3c.dom.Node;
 
 @Component
 public class AmadeusClient {
@@ -24,6 +23,15 @@ public class AmadeusClient {
     private String clientKey;
     private final ObjectMapper objectMapper;
 
+    /**
+     * AmadeusClient is responsible for making REST calls to Amadeus APIs
+     * to fetch airport and flight data.
+     *
+     * @param restTemplate injected RestTemplate
+     * @param baseUrl the base URL for the Amadeus API
+     * @param clientKey the initial client key (API Key)
+     * @param clientSecret the client secret (API Secret)
+     */
     public AmadeusClient(
             RestTemplate restTemplate,
             @Value("${api.base_url}") String baseUrl,
@@ -37,12 +45,21 @@ public class AmadeusClient {
         this.objectMapper = new ObjectMapper();
     }
 
+    /**
+     * Builds an HttpEntity with the current bearer token.
+     *
+     * @return HttpEntity with bearer authorization header
+     */
     public HttpEntity<String> buildHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(clientKey);
         return new HttpEntity<>(headers);
     }
 
+    /**
+     * Refreshes the OAuth2 token by calling the Amadeus security endpoint,
+     * then updates the internal clientKey with the new token.
+     */
     private synchronized void refreshToken() {
         try {
             HttpHeaders headers = new HttpHeaders();
@@ -54,30 +71,32 @@ public class AmadeusClient {
             body.add("client_secret", clientSecret);
 
             HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
-            ResponseEntity<JsonNode> response = restTemplate.postForEntity(baseUrl + "/v1/security/oauth2/token", request, JsonNode.class);
-
+            ResponseEntity<JsonNode> response =
+                    restTemplate.postForEntity(baseUrl + "/v1/security/oauth2/token", request, JsonNode.class);
 
             if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
                 throw new RuntimeException("Error when calling Amadeus API: " + response.getStatusCode());
             }
-
             this.clientKey = response.getBody().path("access_token").asText();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
+    /**
+     * Fetches the first matching Airport data based on a keyword or IATA code.
+     *
+     * @param airportKeyword the airport keyword or partial name
+     * @return Airport object containing name and IATA code
+     */
     public Airport fetchAirport(String airportKeyword) {
-
         HttpEntity<String> entity = buildHeaders();
-
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(baseUrl + "v1/reference-data/locations")
                 .queryParam("subType", "AIRPORT")
                 .queryParam("keyword", airportKeyword)
                 .queryParam("view", "LIGHT");
-
         String uri = uriBuilder.toUriString();
-        ResponseEntity<JsonNode> response = null;
+        ResponseEntity<JsonNode> response;
 
         try {
             response = restTemplate.exchange(uri, HttpMethod.GET, entity, JsonNode.class);
@@ -102,6 +121,20 @@ public class AmadeusClient {
         return airport;
     }
 
+    /**
+     * Fetches flight data (one-way or round-trip) from the Amadeus API.
+     * If arrivalDate is not empty, round-trip data is retrieved.
+     *
+     * @param departureAirportCode the origin IATA code
+     * @param arrivalAirportCode the destination IATA code
+     * @param departureDate date of departure
+     * @param arrivalDate date of return (if round-trip)
+     * @param numAdults number of adult travelers
+     * @param currency currency code
+     * @param nonStop whether to filter only non-stop flights
+     * @return GeneralResponse containing flight offers and dictionaries
+     * @throws JsonProcessingException if JSON parsing fails
+     */
     public GeneralResponse fetchFlightData(
             String departureAirportCode,
             String arrivalAirportCode,
@@ -111,9 +144,7 @@ public class AmadeusClient {
             String currency,
             boolean nonStop
     ) throws JsonProcessingException {
-
         HttpEntity<String> entity = buildHeaders();
-
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(baseUrl + "v2/shopping/flight-offers")
                 .queryParam("originLocationCode", departureAirportCode)
                 .queryParam("destinationLocationCode", arrivalAirportCode)
@@ -127,7 +158,8 @@ public class AmadeusClient {
         }
 
         String uri = uriBuilder.toUriString();
-        ResponseEntity<String> response = null;
+        ResponseEntity<String> response;
+
         try {
             response = restTemplate.exchange(uri, HttpMethod.GET, entity, String.class);
         } catch (HttpClientErrorException.Unauthorized e) {

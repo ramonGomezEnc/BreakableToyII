@@ -23,14 +23,23 @@ public class SearchService {
     private final FlightOfferDetailMapper flightOfferDetailMapper;
     private final SortingUtils sortingUtils;
     private final PaginationUtils paginationUtils;
-
     private final Map<String, List<FlightOffer>> flightOffersCache = new HashMap<>();
     private final Map<String, Dictionaries> dictionariesCache = new HashMap<>();
     private final Map<String, List<Map<String, Object>>> mappedFlightsCache = new HashMap<>();
     private final Map<String, Integer> cacheCountByKey = new HashMap<>();
     private String cacheKey = "";
 
-
+    /**
+     * SearchService coordinates calls to the AmadeusClient,
+     * performs caching, sorting, and pagination,
+     * and delegates mapping to the mappers.
+     *
+     * @param amadeusFlightClient AmadeusClient for API calls
+     * @param flightOfferMapper mapper for essential flight data
+     * @param flightOfferDetailMapper mapper for detailed flight data
+     * @param sortingUtils utility for flight sorting
+     * @param paginationUtils utility for pagination
+     */
     @Autowired
     public SearchService(
             AmadeusClient amadeusFlightClient,
@@ -58,6 +67,12 @@ public class SearchService {
                 + numAdults + "_" + currency + "_" + nonStop;
     }
 
+    /**
+     * Retrieves flight offers in a summarized (essential) format, supports sorting and pagination,
+     * and caches results for performance. If arrivalDate is provided, it fetches round-trip flights.
+     *
+     * @return a map containing flight data and a "counter" of total results.
+     */
     public Map<String, Object> getFlightOptions(
             String departureAirportKeyword,
             Boolean isDepartureCode,
@@ -73,7 +88,6 @@ public class SearchService {
             int page,
             int size
     ) throws JsonProcessingException {
-
         cacheKey = buildCacheKey(
                 departureAirportKeyword, isDepartureCode,
                 arrivalAirportKeyword, isArrivalCode,
@@ -91,7 +105,6 @@ public class SearchService {
                         ? arrivalAirportKeyword
                         : amadeusFlightClient.fetchAirport(arrivalAirportKeyword).getIataCode();
 
-                // Llamada a AmadeusClient para obtener la data real
                 GeneralResponse amadeusResponse = amadeusFlightClient.fetchFlightData(
                         departureAirportCode,
                         arrivalAirportCode,
@@ -106,10 +119,10 @@ public class SearchService {
                 dictionariesCache.put(cacheKey, amadeusResponse.getDictionaries());
                 cacheCountByKey.put(cacheKey, amadeusResponse.getMeta().getCount());
             }
-
             List<FlightOffer> flightList = flightOffersCache.get(cacheKey);
             Dictionaries dictionaries = dictionariesCache.get(cacheKey);
-            List<Map<String, Object>> mappedFlights = flightOfferMapper.buildEssentialFlightList(flightList, dictionaries);
+            List<Map<String, Object>> mappedFlights =
+                    flightOfferMapper.buildEssentialFlightList(flightList, dictionaries);
             mappedFlightsCache.put(cacheKey, mappedFlights);
         }
 
@@ -119,29 +132,31 @@ public class SearchService {
         List<Map<String, Object>> paginatedList = paginationUtils.applyPagination(mappedFlights, page, size);
 
         Map<String, Object> response = new HashMap<>();
-
         response.put("counter", totalCount);
         response.put("data", paginatedList);
-
         return response;
     }
 
+    /**
+     * Retrieves a single flight offer in a detailed format from cached data,
+     * identified by the flightOfferId.
+     *
+     * @param flightOfferId the ID of the flight offer to fetch
+     * @return a map with detailed flight information, or null if not found
+     */
     public Map<String, Object> getDetailedFlightOption(String flightOfferId) throws JsonProcessingException {
         if (!flightOffersCache.containsKey(cacheKey) || !dictionariesCache.containsKey(cacheKey)) {
             return null;
         }
-
         List<FlightOffer> offers = flightOffersCache.get(cacheKey);
         Dictionaries dictionaries = dictionariesCache.get(cacheKey);
 
         Optional<FlightOffer> maybeOffer = offers.stream()
                 .filter(o -> String.valueOf(o.getId()).equals(flightOfferId))
                 .findFirst();
-
-        return maybeOffer.map(flightOffer -> flightOfferDetailMapper.buildDetailedFlightOption(
-                flightOffer,
-                dictionaries
-        )).orElse(null);
-
+        if (maybeOffer.isEmpty()) {
+            return null;
+        }
+        return flightOfferDetailMapper.buildDetailedFlightOption(maybeOffer.get(), dictionaries);
     }
 }
