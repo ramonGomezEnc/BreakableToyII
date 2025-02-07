@@ -18,7 +18,7 @@ interface Flight {
   operatingAirlineCode?: string;
   operatingAirlineName?: string;
   totalFlightTime: string;      // "27h 00m"
-  stops: Stop[];                // escalas
+  stops?: Stop[];                // escalas
   totalPrice: string;           // "29952.00"
   currency: string;             // "MXN"
   pricePerTraveler: string;     // "29952.00"
@@ -26,6 +26,7 @@ interface Flight {
 
 interface FlightCardProps {
   flight: Flight;
+  onCardClick?: () => void;
 }
 
 // Función de ayuda para formatear solo la hora y minutos en 12h con am/pm
@@ -38,12 +39,11 @@ const formatTime = (datetime: string): string => {
   return new Date(datetime).toLocaleTimeString([], options);
 };
 
-export const FlightCard: FC<FlightCardProps> = ({ flight }) => {
+export const FlightCard: FC<FlightCardProps> = ({ flight, onCardClick }) => {
   const departureTime = formatTime(flight.initialDeparture);
   const arrivalTime = formatTime(flight.finalArrival);
 
-  // Determinamos si es "nonstop" o cuántas escalas
-  const numberOfStops = flight.stops.length;
+  const numberOfStops = flight.stops ? flight.stops.length : 0;
   const stopsLabel =
     numberOfStops === 0
       ? "(Nonstop)"
@@ -51,38 +51,46 @@ export const FlightCard: FC<FlightCardProps> = ({ flight }) => {
       ? "(1 stop)"
       : `(${numberOfStops} stops)`;
 
+  const handleClick = () => {
+    if (onCardClick) {
+      onCardClick();
+    }
+  };
+
   return (
-    <div className="border border-gray-300 rounded-md p-4 flex flex-col md:flex-row md:justify-between md:items-start mb-4 bg-white">
-      {/* Columna Izquierda: Horarios, trayecto, escalas, aerolínea */}
+    <div onClick={handleClick} className="border border-gray-300 rounded-md p-4 flex flex-col md:flex-row md:justify-between md:items-start mb-4 bg-white">
+      {/* left col */}
       <div className="md:flex-1">
-        {/* Horarios (ejemplo: "1:40pm - 10:37pm") */}
+
+        {/* times */}
         <p className="text-sm font-semibold">
           {departureTime} - {arrivalTime}
         </p>
 
-        {/* Trayecto (ejemplo: "San Francisco (SFO) - New York (JFK)") */}
+        {/* trayectory */}
         <p className="mt-1 text-sm">
           {flight.departureAirportName} ({flight.departureAirportCode}) &rarr;{" "}
           {flight.arrivalAirportName} ({flight.arrivalAirportCode})
         </p>
 
-        {/* Duración total y escalas (ej. "5h 57m (Nonstop)" o "8h 17m (1 stop)") */}
+        {/* durations */}
         <p className="mt-1 text-sm text-gray-700">
           {flight.totalFlightTime} {stopsLabel}
         </p>
 
-        {/* Detalle de escalas, si las hay */}
+        {/* stops */}
         {numberOfStops > 0 && (
-          <ul className="mt-1 text-xs text-gray-500">
-            {flight.stops.map((stop, index) => (
-              <li key={index}>
+        <ul className="mt-1 text-xs text-gray-500">
+            {flight.stops?.map((stop, index) => (
+            <li key={index}>
                 {stop.layoverTime} en {stop.airportCode}
-              </li>
+            </li>
             ))}
-          </ul>
+        </ul>
         )}
 
-        {/* Aerolínea principal u operadora */}
+
+        {/* airlines */}
         <p className="mt-2 text-sm text-gray-800 font-medium">
           {flight.airlineName} ({flight.airlineCode})
         </p>
@@ -93,10 +101,10 @@ export const FlightCard: FC<FlightCardProps> = ({ flight }) => {
         )}
       </div>
 
-      {/* Separador vertical en pantallas medianas o grandes */}
+        {/* medium col  */}
       <div className="hidden md:block w-px bg-gray-300 mx-6 my-2"></div>
 
-      {/* Columna Derecha: Precios (total y por viajero) */}
+      {/* right col  */}
       <div className="mt-4 md:mt-0 md:w-1/4 flex flex-col items-start md:items-end">
         <p className="text-lg font-bold text-gray-900">
           ${flight.totalPrice} {flight.currency}

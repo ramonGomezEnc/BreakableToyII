@@ -18,9 +18,6 @@ interface FlightSearchParams {
 }
 
 export const searchFlights = async (params: FlightSearchParams) => {
-  const realNonStop = !params.nonStop;
-  console.log(realNonStop, !params.nonStop);
-
   const response = await axios.get(BASE_URL + "flights", {
     params: {
       departureAirportKeyword: params.departureAirportKeyword,
@@ -31,7 +28,7 @@ export const searchFlights = async (params: FlightSearchParams) => {
       arrivalDate: params.arrivalDate,
       numAdults: params.numAdults,
       currency: params.currency,
-      nonStop: realNonStop,
+      nonStop: params.nonStop,
       sortBy: params.sortBy,
       order: params.order,
       page: params.page

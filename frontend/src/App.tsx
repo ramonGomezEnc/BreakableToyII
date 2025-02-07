@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import './App.css'
 import { useNavigate } from "react-router-dom";
 import { FlightSearchCard } from "./components/FlightSearchCard";

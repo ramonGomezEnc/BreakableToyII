@@ -1,45 +1,83 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { searchFlights } from "../api/flightSearchApi"; // la función que llama a Axios
 import { useFlightSearchForm } from "../hooks/useFlightSearchForm";
 import { FlightCard } from "../components/FlightCard";
+import { FlightDetailModal } from "../components/FlightDetailModal";
 
 export const SearchPage: React.FC = () => {
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { formData, setFormData, errors, handleChange, validateForm } = useFlightSearchForm();
+
   const [flights, setFlights] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // Aquí guardamos el total de resultados que regresa el backend
+  const [totalCount, setTotalCount] = useState<number>(0);
+
+  // PageSize fijo de ejemplo (cantidad de resultados por página)
+  const PAGE_SIZE = 10;
+
+  // Modal states
+  const [selectedFlightId, setSelectedFlightId] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState(false);
+
+  // Página actual (convertimos string a number)
+  const currentPage = parseInt(searchParams.get("page") || "0", 10);
+
+  // Calculamos cuántas páginas hay
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+
+  // 1. Al montar, inicializamos formData con los valores de la URL
   useEffect(() => {
     const newFormData = { ...formData };
+
     for (const [key, value] of searchParams.entries()) {
       if (key === "numAdults") {
         newFormData[key] = parseInt(value, 10);
-      } else if (key === "nonStop" || key === "isDepartureCode" || key === "isArrivalCode") {
+      } else if (
+        key === "nonStop" ||
+        key === "isDepartureCode" ||
+        key === "isArrivalCode"
+      ) {
         newFormData[key] = value === "true";
       } else {
         newFormData[key] = value;
       }
     }
     setFormData(newFormData);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-
+  // 2. Cada vez que cambien los searchParams, llamamos a la API
   useEffect(() => {
     fetchFlights();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
+  // Llamada a la API
   const fetchFlights = async () => {
     setLoading(true);
     try {
+      // Construimos el objeto de parámetros a partir de la query
       const params: any = {};
       for (const [key, val] of searchParams.entries()) {
         params[key] = val;
       }
 
-      const data = await searchFlights(params);
-      setFlights(data);
+      // Asegura que el backend reciba el size
+      params.size = PAGE_SIZE;
+
+      // Llamada a tu endpoint: { counter, data: [] }
+      const response = await searchFlights(params);
+
+      // Guardamos la data de vuelos y el total
+      setFlights(response.data);
+      setTotalCount(response.counter);
+
+      // Imprimimos en consola el valor real que vino del backend
+      console.log("Total Count del Backend:", response.counter);
     } catch (error) {
       console.error("Error fetching flights:", error);
     } finally {
@@ -47,6 +85,7 @@ export const SearchPage: React.FC = () => {
     }
   };
 
+  // Manejo de submit del formulario
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -57,34 +96,58 @@ export const SearchPage: React.FC = () => {
       updatedParams[key] = formData[key as keyof typeof formData];
     });
 
-    updatedParams.page = 0;
+    // Cuando se hace una nueva búsqueda, reseteamos la página a 0
+    updatedParams.page = "0";
 
     setSearchParams(updatedParams);
   };
 
+  // Ordenamiento
   const handleSort = (sortBy: string, order: string) => {
     const updatedParams = Object.fromEntries(searchParams.entries());
     updatedParams.sortBy = sortBy;
     updatedParams.order = order;
-    updatedParams.page = 0;
+    updatedParams.page = "0";
 
     setSearchParams(updatedParams);
   };
 
-  const currentPage = parseInt(searchParams.get("page") || "0", 10);
-
+  // Navegar a otra página
   const handlePageChange = (newPage: number) => {
+    if (newPage < 0) return; // no bajar de 0
+    if (newPage >= totalPages) return; // no pasar de la última página
+
     const updatedParams = Object.fromEntries(searchParams.entries());
-    updatedParams.page = newPage;
+    // Aseguramos pasarlo como string
+    updatedParams.page = newPage.toString();
+
     setSearchParams(updatedParams);
+  };
+
+  // Abrir modal
+  const handleOpenModal = (flightId: string) => {
+    setSelectedFlightId(flightId);
+    setShowModal(true);
+  };
+
+  // Cerrar modal
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedFlightId(null);
   };
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* query */}
+      {/* Modal para detalles del vuelo */}
+      {showModal && selectedFlightId && (
+        <FlightDetailModal flightId={selectedFlightId} onClose={handleCloseModal} />
+      )}
+
+      {/* Barra superior con el formulario */}
       <div className="bg-white px-4 py-6 shadow">
         <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-4">
-
+          {/* ... Tus inputs de aeropuerto, fechas, etc. ... */}
+          {/* Salida */}
           <div className="flex flex-col">
             <label className="text-sm font-medium">Aeropuerto Salida</label>
             <input
@@ -96,12 +159,10 @@ export const SearchPage: React.FC = () => {
               placeholder="Ej: MEX"
             />
             {errors.departureAirportKeyword && (
-              <p className="text-red-500 text-xs">
-                {errors.departureAirportKeyword}
-              </p>
+              <p className="text-red-500 text-xs">{errors.departureAirportKeyword}</p>
             )}
           </div>
-
+          {/* isDepartureCode */}
           <div className="flex items-center mt-4">
             <input
               type="checkbox"
@@ -113,6 +174,7 @@ export const SearchPage: React.FC = () => {
             <label className="text-sm">Usar código IATA</label>
           </div>
 
+          {/* Llegada */}
           <div className="flex flex-col">
             <label className="text-sm font-medium">Aeropuerto Llegada</label>
             <input
@@ -124,12 +186,10 @@ export const SearchPage: React.FC = () => {
               placeholder="Ej: CAN"
             />
             {errors.arrivalAirportKeyword && (
-              <p className="text-red-500 text-xs">
-                {errors.arrivalAirportKeyword}
-              </p>
+              <p className="text-red-500 text-xs">{errors.arrivalAirportKeyword}</p>
             )}
           </div>
-
+          {/* isArrivalCode */}
           <div className="flex items-center mt-4">
             <input
               type="checkbox"
@@ -141,6 +201,7 @@ export const SearchPage: React.FC = () => {
             <label className="text-sm">Usar código IATA</label>
           </div>
 
+          {/* Fecha de salida */}
           <div className="flex flex-col">
             <label className="text-sm font-medium">Fecha de Salida</label>
             <input
@@ -155,6 +216,7 @@ export const SearchPage: React.FC = () => {
             )}
           </div>
 
+          {/* Fecha de llegada */}
           <div className="flex flex-col">
             <label className="text-sm font-medium">Fecha de Llegada</label>
             <input
@@ -169,6 +231,7 @@ export const SearchPage: React.FC = () => {
             )}
           </div>
 
+          {/* # adultos */}
           <div className="flex flex-col">
             <label className="text-sm font-medium"># Adultos</label>
             <input
@@ -184,6 +247,7 @@ export const SearchPage: React.FC = () => {
             )}
           </div>
 
+          {/* Moneda */}
           <div className="flex flex-col">
             <label className="text-sm font-medium">Moneda</label>
             <select
@@ -198,6 +262,7 @@ export const SearchPage: React.FC = () => {
             </select>
           </div>
 
+          {/* NonStop */}
           <div className="flex items-center mt-4">
             <input
               type="checkbox"
@@ -251,31 +316,48 @@ export const SearchPage: React.FC = () => {
         {loading && <p className="text-gray-700">Cargando vuelos...</p>}
 
         {!loading && flights.length === 0 && (
-          <p className="text-red-500">No se encontró información de vuelos. Intenta otra búsqueda.</p>
+          <p className="text-red-500">
+            No se encontró información de vuelos. Intenta otra búsqueda.
+          </p>
         )}
 
         {!loading && flights.length > 0 && (
           <div className="grid gap-4">
             {flights.map((flight) => (
-              <FlightCard key={flight.id} flight={flight} />
+              <FlightCard
+                key={flight.id}
+                flight={flight}
+                onCardClick={() => handleOpenModal(flight.id)}
+              />
             ))}
           </div>
         )}
 
-        {/* pagination */}
+        {/* Paginación */}
         {!loading && flights.length > 0 && (
           <div className="mt-4 flex justify-center items-center space-x-4">
             <button
-              className={`py-2 px-4 rounded ${currentPage === 0 ? "bg-gray-200 cursor-not-allowed" : "bg-blue-600 text-white hover:bg-blue-700"}`}
+              className={`py-2 px-4 rounded ${
+                currentPage === 0
+                  ? "bg-gray-200 cursor-not-allowed"
+                  : "bg-blue-600 text-white hover:bg-blue-700"
+              }`}
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 0}
             >
               Anterior
             </button>
-            <span className="font-medium">Página {currentPage + 1}</span>
+            <span className="font-medium">
+              Página {currentPage + 1} de {totalPages}
+            </span>
             <button
-              className="py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700"
+              className={`py-2 px-4 rounded ${
+                currentPage >= totalPages - 1
+                  ? "bg-gray-200 cursor-not-allowed"
+                  : "bg-blue-600 text-white hover:bg-blue-700"
+              }`}
               onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage >= totalPages - 1}
             >
               Siguiente
             </button>
